@@ -66,7 +66,11 @@ const userPost = async (
   try {
     const user = req.body;
     const hashedPassword = bcrypt.hashSync(user.password, salt);
-    const result = await addUser({...user, password: hashedPassword});
+    const result = await addUser({
+      ...user,
+      password: hashedPassword,
+      user_id: 0,
+    });
 
     res.json(result);
   } catch (error) {

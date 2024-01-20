@@ -97,8 +97,10 @@ const catPut = async (
     const user = await getUser(userId);
     const id = Number(req.params.id);
     const {cat} = req.body; // Destructure the cat object
-    const role = user.role;
-    const result = await updateCat({...cat, owner: userId}, id, userId, role); // Pass the correct properties of the cat object
+    const result = await updateCat({...cat, owner: userId}, id, {
+      role: user.role,
+      user_id: userId,
+    }); // Pass the correct properties of the cat object
     res.json(result);
   } catch (error) {
     next(error);
