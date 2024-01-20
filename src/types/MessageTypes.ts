@@ -1,5 +1,8 @@
+import {Cat} from './DBTypes';
+
 type MessageResponse = {
   message: string;
+  data?: Cat;
 };
 
 type ErrorResponse = MessageResponse & {

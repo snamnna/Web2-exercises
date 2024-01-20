@@ -47,9 +47,8 @@ const userGet = async (
 // - email should be a valid email
 // - password should be at least 5 characters long
 // userPost should use bcrypt to hash password
-
 const userPost = async (
-  req: Request<{}, {}, User>,
+  req: Request<{}, {}, Omit<User, 'user_id'>>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
@@ -66,8 +65,8 @@ const userPost = async (
 
   try {
     const user = req.body;
-    const hash = bcrypt.hashSync(user.password, salt);
-    const result = await addUser({...user, password: hash});
+    const hashedPassword = bcrypt.hashSync(user.password, salt);
+    const result = await addUser({...user, password: hashedPassword});
 
     res.json(result);
   } catch (error) {
@@ -76,7 +75,7 @@ const userPost = async (
 };
 
 const userPut = async (
-  req: Request<{id: number}, {}, User>,
+  req: Request<{id: number}, {}, {user: User}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
@@ -92,12 +91,10 @@ const userPut = async (
   }
 
   try {
-    if (req.user && req.user.role !== 'admin') {
+    const user = req.body.user;
+    if (user && user.role !== 'admin') {
       throw new CustomError('Admin only', 403);
     }
-
-    const user = req.body;
-
     const result = await updateUser(user, req.params.id);
 
     res.json(result);
@@ -109,7 +106,6 @@ const userPut = async (
 // TODO: create userPutCurrent function to update current user
 // userPutCurrent should use updateUser function from userModel
 // userPutCurrent should use validationResult to validate req.body
-
 const userPutCurrent = async (
   req: Request<{}, {}, User>,
   res: Response<MessageResponse>,
@@ -127,12 +123,13 @@ const userPutCurrent = async (
   }
 
   try {
-    if (!req.user?.user_id) {
-      throw new CustomError('No user', 400);
-    }
     const user = req.body;
 
-    const result = await updateUser(user, req.user.user_id);
+    if (!user?.user_id) {
+      throw new CustomError('No user', 400);
+    }
+
+    const result = await updateUser(user, user.user_id);
 
     res.json(result);
   } catch (error) {
@@ -144,9 +141,8 @@ const userPutCurrent = async (
 // userDelete should use deleteUser function from userModel
 // userDelete should use validationResult to validate req.params.id
 // userDelete should use req.user to get role
-
 const userDelete = async (
-  req: Request<{id: number}, {}, {}>,
+  req: Request<{user: User}, {}, {}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
@@ -160,13 +156,13 @@ const userDelete = async (
     next(new CustomError(messages, 400));
     return;
   }
-
   try {
-    if (req.user && req.user.role !== 'admin') {
+    const user = req.params;
+    if (user && user.user.role !== 'admin') {
       throw new CustomError('Admin only', 403);
     }
-
-    const result = await deleteUser(req.params.id);
+    const id = Number(user.user?.user_id ?? '');
+    const result = await deleteUser(id);
 
     res.json(result);
   } catch (error) {
@@ -175,7 +171,7 @@ const userDelete = async (
 };
 
 const userDeleteCurrent = async (
-  req: Request,
+  req: Request<{user: User}, {}, {}>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
@@ -191,10 +187,11 @@ const userDeleteCurrent = async (
   }
 
   try {
-    if (!req.user?.user_id) {
+    const user = req.params;
+    if (!user.user?.user_id) {
       throw new CustomError('No user', 400);
     }
-    const result = await deleteUser(req.user.user_id);
+    const result = await deleteUser(user.user.user_id);
 
     res.json(result);
   } catch (error) {
