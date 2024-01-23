@@ -85,9 +85,13 @@ const updateCat = async (
   user: {role: string; user_id: number}
 ): Promise<MessageResponse> => {
   const cat = await getCat(catId);
-  if (user.role === 'user' && cat.owner !== user.user_id) {
-    throw new CustomError('Not your cat', 403);
+  if (
+    (user.role === 'user' && cat.owner !== user.user_id) ||
+    user.role !== 'admin'
+  ) {
+    throw new CustomError('Not authorized', 403);
   }
+
   const sql = promisePool.format(
     `
     UPDATE sssf_cat 

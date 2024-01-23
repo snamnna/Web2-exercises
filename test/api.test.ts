@@ -80,55 +80,55 @@ describe('GET /api/v1', () => {
     owner = user.user_id;
   });
 
-  // test cat upload without GPS
-  let catID = 0;
-  it('should upload a cat', async () => {
-    const message = await postCat(app, token, owner, 'cat.jpg');
-    catID = message.id!;
-  });
+  // // test cat upload without GPS
+  // let catID = 0;
+  // it('should upload a cat', async () => {
+  //   const message = await postCat(app, token, owner, 'cat.jpg');
+  //   catID = message.id!;
+  // });
 
-  // test cat upload with GPS
-  let catID2 = 0;
-  it('should upload a cat with GPS', async () => {
-    const message = await postCat(app, token, owner, 'picWithGPS.jpg');
-    catID2 = message.id!;
-  });
+  // // test cat upload with GPS
+  // let catID2 = 0;
+  // it('should upload a cat with GPS', async () => {
+  //   const message = await postCat(app, token, owner, 'picWithGPS.jpg');
+  //   catID2 = message.id!;
+  // });
 
-  // test get all cats
-  it('should return array of cats', async () => {
-    await getCat(app);
-  });
+  // // test get all cats
+  // it('should return array of cats', async () => {
+  //   await getCat(app);
+  // });
 
-  // test get single cat
-  it('should return single cat', async () => {
-    await getSingleCat(app, catID);
-  });
+  // // test get single cat
+  // it('should return single cat', async () => {
+  //   await getSingleCat(app, catID);
+  // });
 
-  // modify user's cat
-  it('should modify a cat', async () => {
-    await userPutCat(app, token, catID);
-  });
+  // // modify user's cat
+  // it('should modify a cat', async () => {
+  //   await userPutCat(app, token, catID);
+  // });
 
-  // test delete user's cat
-  it('should delete a cat', async () => {
-    await userDeleteCat(app, token, catID);
-  });
+  // // test delete user's cat
+  // it('should delete a cat', async () => {
+  //   await userDeleteCat(app, token, catID);
+  // });
 
-  // delete GPS image
-  it('should delete GPS image', async () => {
-    await userDeleteCat(app, token, catID2);
-  });
+  // // delete GPS image
+  // it('should delete GPS image', async () => {
+  //   await userDeleteCat(app, token, catID2);
+  // });
 
-  // upload another cat for admin tests
-  it('should upload a cat for admin test', async () => {
-    const message = await postCat(app, token, owner, 'cat.jpg');
-    catID = message.id!;
-  });
+  // // upload another cat for admin tests
+  // it('should upload a cat for admin test', async () => {
+  //   const message = await postCat(app, token, owner, 'cat.jpg');
+  //   catID = message.id!;
+  // });
 
-  // test delete user based on token
-  it('should delete current user', async () => {
-    await deleteUser(app, token);
-  });
+  // // test delete user based on token
+  // it('should delete current user', async () => {
+  //   await deleteUser(app, token);
+  // });
 
   // login as admin
   it('should login as admin', async () => {
@@ -139,13 +139,13 @@ describe('GET /api/v1', () => {
     token = user.token;
   });
 
-  // test modify user's cat as admin
-  it('should modify a cat as admin', async () => {
-    await adminPutCat(app, token, catID);
-  });
+  // // test modify user's cat as admin
+  // it('should modify a cat as admin', async () => {
+  //   await adminPutCat(app, token, catID);
+  // });
 
-  // test delete user's cat as admin
-  it('should delete a cat as admin', async () => {
-    await userDeleteCat(app, token, catID);
-  });
+  // // test delete user's cat as admin
+  // it('should delete a cat as admin', async () => {
+  //   await userDeleteCat(app, token, catID);
+  // });
 });

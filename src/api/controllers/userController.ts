@@ -47,30 +47,31 @@ const userGet = async (
 // - email should be a valid email
 // - password should be at least 5 characters long
 // userPost should use bcrypt to hash password
+
 const userPost = async (
-  req: Request<{}, {}, Omit<User, 'user_id'>>,
+  req: Request<{}, {}, User>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+
+    console.log('userPost validation', messages);
     next(new CustomError(messages, 400));
     return;
   }
-
   try {
+    if (!req.body.role) {
+      req.body.role = 'user';
+    }
     const user = req.body;
-    const hashedPassword = bcrypt.hashSync(user.password, salt);
-    const result = await addUser({
-      ...user,
-      password: hashedPassword,
-      user_id: 0,
-    });
+    console.log('Tässä user jrgöheaöoithgeoir', user);
+    user.password = bcrypt.hashSync(user.password, salt);
+    const result = await addUser(user);
 
     res.json(result);
   } catch (error) {
@@ -79,23 +80,23 @@ const userPost = async (
 };
 
 const userPut = async (
-  req: Request<{id: number}, {}, {user: User}>,
+  req: Request<{id: number}, {}, User>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+    console.log('userPut validation', messages);
     next(new CustomError(messages, 400));
     return;
   }
 
   try {
-    const user = req.body.user;
+    const user = req.body;
     if (user && user.role !== 'admin') {
       throw new CustomError('Admin only', 403);
     }
@@ -115,13 +116,13 @@ const userPutCurrent = async (
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+    console.log('cuserPutCurrent validation', messages);
     next(new CustomError(messages, 400));
     return;
   }
@@ -129,11 +130,11 @@ const userPutCurrent = async (
   try {
     const user = req.body;
 
-    if (!user?.user_id) {
+    if (!user) {
       throw new CustomError('No user', 400);
     }
 
-    const result = await updateUser(user, user.user_id);
+    const result = await updateUser(req.body, (req.user as User).user_id);
 
     res.json(result);
   } catch (error) {
@@ -156,7 +157,7 @@ const userDelete = async (
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+    console.log('userDelete validation', messages);
     next(new CustomError(messages, 400));
     return;
   }

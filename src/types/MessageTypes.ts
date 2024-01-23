@@ -1,4 +1,4 @@
-import {Cat} from './DBTypes';
+import {Cat, User} from './DBTypes';
 
 type MessageResponse = {
   message: string;
@@ -13,4 +13,9 @@ type UploadResponse = MessageResponse & {
   id: number;
 };
 
-export {MessageResponse, ErrorResponse, UploadResponse};
+interface UserResponse {
+  user?: User;
+  message?: string;
+}
+
+export {MessageResponse, ErrorResponse, UploadResponse, UserResponse};
