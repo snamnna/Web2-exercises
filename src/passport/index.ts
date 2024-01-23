@@ -27,7 +27,7 @@ passport.use(
   new JWTStrategy(
     {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: 'asdf',
+      secretOrKey: process.env.JWT_SECRET, //Tärkeää! Tämä on se salaisuus, jolla token on luotu. Tämä pitää olla sama kuin authController.ts:ssä
     },
     (jwtPayload, done) => {
       // console.log('payload', jwtPayload);

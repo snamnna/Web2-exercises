@@ -33,7 +33,7 @@ const catGet = async (req: Request, res: Response<Cat>, next: NextFunction) => {
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+    console.log('cat_Get validation', messages);
     next(new CustomError(messages, 400));
     return;
   }
@@ -49,11 +49,11 @@ const catGet = async (req: Request, res: Response<Cat>, next: NextFunction) => {
 
 // TODO: create catPost function to add new cat
 const catPost = async (
-  req: Request<{}, {}, {cat: Omit<Cat, 'owner'> & {owner: number}}>,
+  req: Request<{}, {}, Omit<Cat, 'owner'> & {owner: number}>,
   res: Response<MessageResponse, {coords: [number, number]}>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.body);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -65,19 +65,40 @@ const catPost = async (
     return;
   }
   // Get the filename, latitude, longitude, user_id,
-  const {filename, lat, lng, owner} = req.body.cat;
 
   try {
     // Use addCat to add the new cat
-    const cat = await addCat({...req.body.cat, filename, lat, lng, owner});
-    res.json(cat);
+    if (!req.file) {
+      throw new CustomError('No file', 400);
+    }
+    const [lat, lng] = res.locals.coords;
+    const filename = req.file.filename;
+    const {user_id, role} = req.user as User;
+    const cat: Omit<Cat, 'owner'> & {
+      owner: number;
+      filename: string;
+      lat: number;
+      lng: number;
+      user_id: number;
+      role: string;
+    } = {
+      ...req.body,
+      owner: user_id,
+      filename,
+      lat,
+      lng,
+      user_id,
+      role,
+    };
+    const result = await addCat(cat);
+    res.json(result);
   } catch (error) {
     next(error);
   }
 };
 
 const catPut = async (
-  req: Request<{id: string}, {}, {cat: Omit<Cat, 'owner'> & {owner: number}}>,
+  req: Request<{id: string}, {}, Cat>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
@@ -93,14 +114,9 @@ const catPut = async (
   }
 
   try {
-    const userId = req.body.cat.owner;
-    const user = await getUser(userId);
     const id = Number(req.params.id);
-    const {cat} = req.body; // Destructure the cat object
-    const result = await updateCat({...cat, owner: userId}, id, {
-      role: user.role,
-      user_id: userId,
-    }); // Pass the correct properties of the cat object
+    const cat = req.body;
+    const result = await updateCat(cat, id, req.user as User);
     res.json(result);
   } catch (error) {
     next(error);
