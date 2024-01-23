@@ -97,12 +97,39 @@ const catPost = async (
   }
 };
 
+// const catPut = async (
+//   req: Request<{id: string}, {}, Cat>,
+//   res: Response<MessageResponse>,
+//   next: NextFunction
+// ) => {
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     const messages: string = errors
+//       .array()
+//       .map((error) => `${error.msg}: ${error.param}`)
+//       .join(', ');
+//     console.log('cat_post validation', messages);
+//     next(new CustomError(messages, 400));
+//     return;
+//   }
+
+//   try {
+//     const id = Number(req.params.id);
+//     const cat = req.body;
+//     console.log('Tässä req.user catPutista', req.user);
+//     const result = await updateCat(cat, id, req.user as User);
+//     res.json(result);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const catPut = async (
-  req: Request<{id: string}, {}, Cat>,
+  req: Request<{id: number}, {}, Cat>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.params);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -115,8 +142,8 @@ const catPut = async (
 
   try {
     const id = Number(req.params.id);
-    const cat = req.body;
-    const result = await updateCat(cat, id, req.user as User);
+    const cat = req.body as Cat;
+    const result = await updateCat(cat, id);
     res.json(result);
   } catch (error) {
     next(error);

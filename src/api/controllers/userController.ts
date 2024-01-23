@@ -147,11 +147,11 @@ const userPutCurrent = async (
 // userDelete should use validationResult to validate req.params.id
 // userDelete should use req.user to get role
 const userDelete = async (
-  req: Request<{user: User}, {}, {}>,
+  req: Request<{id: number}, {}, User>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.params);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
@@ -162,12 +162,11 @@ const userDelete = async (
     return;
   }
   try {
-    const user = req.params;
-    if (user && user.user.role !== 'admin') {
+    const user = req.user as User;
+    if (user && user.role !== 'admin') {
       throw new CustomError('Admin only', 403);
     }
-    const id = Number(user.user?.user_id ?? '');
-    const result = await deleteUser(id);
+    const result = await deleteUser(user.user_id);
 
     res.json(result);
   } catch (error) {
@@ -176,27 +175,28 @@ const userDelete = async (
 };
 
 const userDeleteCurrent = async (
-  req: Request<{user: User}, {}, {}>,
+  req: Request<{id: number}, {}, User>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req);
+  const errors = validationResult(req.params);
   if (!errors.isEmpty()) {
     const messages: string = errors
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
       .join(', ');
-    console.log('cat_post validation', messages);
+    console.log('userDeleteCurrent validation', messages);
     next(new CustomError(messages, 400));
     return;
   }
 
   try {
-    const user = req.params;
-    if (!user.user?.user_id) {
+    const user = req.user as User;
+    console.log('UserId tässä', user.user_id);
+    if (!user.user_id) {
       throw new CustomError('No user', 400);
     }
-    const result = await deleteUser(user.user.user_id);
+    const result = await deleteUser(user.user_id);
 
     res.json(result);
   } catch (error) {

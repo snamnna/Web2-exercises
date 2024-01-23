@@ -1,7 +1,7 @@
 import {promisePool} from '../../database/db';
 import CustomError from '../../classes/CustomError';
 import {ResultSetHeader, RowDataPacket} from 'mysql2';
-import {Cat} from '../../types/DBTypes';
+import {Cat, User} from '../../types/DBTypes';
 import {MessageResponse, UploadResponse} from '../../types/MessageTypes';
 
 const getAllCats = async (): Promise<Cat[]> => {
@@ -79,27 +79,43 @@ const addCat = async (data: Cat): Promise<UploadResponse> => {
 // if role is user, update only cats owned by user
 // You can use updateUser function from userModel as a reference for SQL
 
-const updateCat = async (
-  data: Partial<Cat>,
-  catId: number,
-  user: {role: string; user_id: number}
-): Promise<MessageResponse> => {
-  const cat = await getCat(catId);
-  if (
-    user.role !== 'admin' &&
-    (cat.owner as {user_id: number}).user_id !== user.user_id
-  ) {
-    throw new CustomError('Not authorized', 403);
-  }
+// const updateCat = async (
+//   data: Partial<Cat>,
+//   catId: number,
+//   user: User
+// ): Promise<MessageResponse> => {
+//   const cat = await getCat(catId);
+//   console.log('Täaaä cat', cat);
+//   if (user.role !== 'admin') {
+//     if ((cat.owner as {user_id: number}).user_id !== user.user_id) {
+//       throw new CustomError('Not authorized', 403);
+//     }
+//   }
 
-  const sql = promisePool.format(
-    `
-    UPDATE sssf_cat 
-    SET ? 
-    WHERE cat_id = ?;
-    `,
-    [data, catId]
-  );
+//   const sql = promisePool.format(
+//     `
+//     UPDATE sssf_cat
+//     SET ?
+//     WHERE cat_id = ?;
+//     `,
+//     [data, catId]
+//   );
+//   const [headers] = await promisePool.execute<ResultSetHeader>(sql);
+//   console.log('Headersjuttu', headers.info);
+//   if (headers.affectedRows === 0) {
+//     throw new CustomError('No cats updated', 400);
+//   }
+//   return {message: 'Cat updated'};
+// };
+
+const updateCat = async (
+  data: Cat,
+  catId: number
+): Promise<MessageResponse> => {
+  const sql = promisePool.format('UPDATE sssf_cat SET ? WHERE cat_id = ?;', [
+    data,
+    catId,
+  ]);
   const [headers] = await promisePool.execute<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {
     throw new CustomError('No cats updated', 400);

@@ -144,7 +144,8 @@ describe('GET /api/v1', () => {
 
   // test modify user's cat as admin
   it('should modify a cat as admin', async () => {
-    await adminPutCat(app, token, catID);
+    const message = await adminPutCat(app, token, catID);
+    console.log('message admin ////////////', message);
   });
 
   // test delete user's cat as admin
