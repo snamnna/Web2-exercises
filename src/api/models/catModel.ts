@@ -110,12 +110,22 @@ const addCat = async (data: Cat): Promise<UploadResponse> => {
 
 const updateCat = async (
   data: Cat,
-  catId: number
+  catId: number,
+  userId: number,
+  role: string
 ): Promise<MessageResponse> => {
-  const sql = promisePool.format('UPDATE sssf_cat SET ? WHERE cat_id = ?;', [
-    data,
-    catId,
-  ]);
+  let sql;
+  if (role === 'admin') {
+    sql = promisePool.format('UPDATE sssf_cat SET ? WHERE cat_id = ?;', [
+      data,
+      catId,
+    ]);
+  } else {
+    sql = promisePool.format(
+      'UPDATE sssf_cat SET ? WHERE cat_id = ? AND owner = ?;',
+      [data, catId, userId]
+    );
+  }
   const [headers] = await promisePool.execute<ResultSetHeader>(sql);
   if (headers.affectedRows === 0) {
     throw new CustomError('No cats updated', 400);

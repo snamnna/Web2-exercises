@@ -125,12 +125,12 @@ const catPost = async (
 // };
 
 const catPut = async (
-  req: Request<{id: number}, {}, Cat>,
+  req: Request<{id: string}, {}, Cat>,
   res: Response<MessageResponse>,
   next: NextFunction
 ) => {
-  const errors = validationResult(req.params);
-  if (!errors.isEmpty()) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) { 
     const messages: string = errors
       .array()
       .map((error) => `${error.msg}: ${error.param}`)
@@ -142,8 +142,16 @@ const catPut = async (
 
   try {
     const id = Number(req.params.id);
-    const cat = req.body as Cat;
-    const result = await updateCat(cat, id);
+    const cat = req.body;
+
+    // Ensure req.user is of type User
+    if (!req.user || !('user_id' in req.user)) {
+      throw new CustomError('Invalid user data', 400);
+    }
+
+    const {user_id, role} = req.user as User; // Explicit type assertion
+
+    const result = await updateCat(cat, id, user_id, role);
     res.json(result);
   } catch (error) {
     next(error);
